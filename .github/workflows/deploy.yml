@@ -1,0 +1,21 @@
+name: Deploy to Production
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy-server:
+    name: Deploy Server to AWS
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+      - name: Install Dependencies
+        working-directory: ./server
+        run: npm install
