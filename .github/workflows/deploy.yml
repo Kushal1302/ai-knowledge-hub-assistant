@@ -9,7 +9,7 @@ jobs:
     name: Deploy Server to DOCKER HUB
     runs-on: ubuntu-latest
     env:
-      IMAGE_NAME: ai-hub-server
+      IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/ai-hub-server
       TAG: ${{ github.sha }}
     steps:
       - name: Checkout Repository
