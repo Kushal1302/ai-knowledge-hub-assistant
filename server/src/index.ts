@@ -4,7 +4,7 @@ import { Hono, type Context } from "hono";
 const app = new Hono();
 
 app.get("/", (c: Context) => {
-  return c.html(`<h1>AI Knowledge Hub Assistant Server is Running</h1>`);
+  return c.json({ message: "AI Knowledge Hub Assistant Server is Running" });
 });
 
 serve(

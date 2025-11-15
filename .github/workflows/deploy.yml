@@ -34,30 +34,13 @@ jobs:
           docker push $IMAGE_NAME:latest
           docker push $IMAGE_NAME:${{ github.sha }}
 
-      - name: Install SSH client
-        run: sudo apt-get update && sudo apt-get install -y openssh-client
-
-      - name: Prepare SSH key
-        env:
-          SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
-        run: |
-          mkdir -p ~/.ssh
-          echo "$SSH_KEY" > ~/.ssh/ai-hub-key.pem
-          chmod 600 ~/.ssh/ai-hub-key.pem
-          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
-
-      - name: Add SSH key to agent
-        uses: webfactory/ssh-agent@v0.9.1
-        with:
-          ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
-
       - name: Deploy to EC2 via SSH
-        run: |
-          # Use ssh-keyscan to avoid prompt, but without manual key setup
-          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
-          # Now run the SSH command directly
-          ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
-            docker rm -f ai-hub-server || true
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
             docker pull $IMAGE_NAME:latest
-            docker run -d --name ai-hub-server --restart=always -p 80:3000 $IMAGE_NAME:latest
-          EOF
+            docker stop ai-hub-container || true && docker rm ai-hub-container || true
+            docker run -d --name ai-hub-container -p 80:3000 $IMAGE_NAME:latest
