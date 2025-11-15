@@ -1,0 +1,11 @@
+version: "3.9"
+
+services:
+  server:
+    image: kushal1302/ai-hub-server:latest
+    container_name: ai-hub-container
+    ports:
+      - "80:3000"
+    restart: always
+    env_file:
+      - .env
