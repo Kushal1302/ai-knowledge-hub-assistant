@@ -1,23 +1,32 @@
-FROM node:22-alpine AS base
+# ---------------------------
+# 1. Build Stage
+# ---------------------------
+FROM node:20-alpine AS builder
 
-FROM base AS builder
-
-RUN apk add --no-cache gcompat
 WORKDIR /app
 
-COPY package*json tsconfig.json src ./
+COPY package*.json ./
+RUN npm ci
 
-RUN npm ci && \
-    npm run build && \
-    npm prune --production
+COPY tsconfig.json ./
+COPY src ./src
 
-FROM base AS runner
+RUN npm run build
+RUN npm prune --production
+
+
+# ---------------------------
+# 2. Runtime Stage (distroless)
+# ---------------------------
+FROM gcr.io/distroless/nodejs20
+
 WORKDIR /app
 
-COPY --from=builder /app/node_modules /app/node_modules
-COPY --from=builder /app/dist /app/dist
-COPY --from=builder /app/package.json /app/package.json
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/package.json ./package.json
 
 EXPOSE 3000
 
-CMD ["node", "/app/dist/index.js"]
+# Distroless expects ENTRY directly = JS file
+CMD ["dist/index.js"]
