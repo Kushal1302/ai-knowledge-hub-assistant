@@ -1,0 +1,6 @@
+# Allow all crawlers (Google, Bing, etc.)
+User-agent: *
+Allow: /
+
+# Point them to your sitemap (Update this link!)
+Sitemap: https://vishwakarma-engineers.vercel.app/sitemap.xml
